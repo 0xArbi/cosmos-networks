@@ -1,9 +1,9 @@
 import Head from "next/head";
 import Image from "next/image";
-import { chains, assets } from "chain-registry";
+import registry from "chain-registry";
 import { Chain } from "@chain-registry/types";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/20/solid";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { chainRegistryChainToKeplr } from "@chain-registry/keplr";
 import { Keplr } from "@keplr-wallet/types";
@@ -26,6 +26,8 @@ export default function Home() {
     property: "name" | "id";
     value: null | boolean;
   }>({ property: "name", value: true });
+  const [search, setSearch] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const onKeplr = async (wallet: "keplr" | "cosmostation", chain: Chain) => {
     if (wallet === "keplr" && !window.keplr) {
@@ -40,7 +42,7 @@ export default function Home() {
     }
 
     try {
-      const config = chainRegistryChainToKeplr(chain, assets);
+      const config = chainRegistryChainToKeplr(chain, registry.assets);
       if (config.features) {
         // @ts-expect-error
         config.features = config.features.filter((x) => x !== "stargate");
@@ -63,6 +65,44 @@ export default function Home() {
     }));
   };
 
+  useEffect(() => {
+    const f = (event: KeyboardEvent) => {
+      if (event.key === "/") {
+        if (document.getElementById("search") !== document.activeElement) {
+          event.preventDefault();
+          document.getElementById("search")?.focus();
+        } else {
+          return true;
+        }
+      }
+    };
+    window.addEventListener("keydown", f);
+    return () => {
+      window.removeEventListener("keydown", f);
+    };
+  });
+
+  let chains = registry.chains.sort((a, b) => {
+    const aValue: string =
+      sort.property === "name" ? a.pretty_name : a.chain_id;
+    const bValue = sort.property === "name" ? b.pretty_name : b.chain_id;
+    if (sort.value === null) {
+      return 0;
+    }
+    if (sort.value === true) {
+      return aValue.localeCompare(bValue);
+    }
+    return bValue.localeCompare(aValue);
+  });
+  if (search) {
+    chains = chains.filter(
+      (x) =>
+        x.pretty_name.toLowerCase().includes(search.toLowerCase()) ||
+        x.chain_id.toLowerCase().includes(search.toLowerCase()) ||
+        x.chain_name.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+
   return (
     <div className="max-w-screen-md mx-auto pt-24 pb-12">
       <Head>
@@ -79,12 +119,31 @@ export default function Home() {
           Cosmos Network Helper
         </div>
 
-        <div className="text-center text-sm">
+        <div className="text-center text-sm text-gray-700">
           Click any of the following chains to add them to your wallet!
         </div>
 
         <div className="px-4 sm:px-6 lg:px-8">
-          <div className="mt-8 flex flex-col">
+          <div>
+            <div className="relative mt-1 flex items-center">
+              <input
+                ref={searchRef}
+                type="text"
+                name="search"
+                id="search"
+                value={search}
+                placeholder="cosmos"
+                className="block w-full rounded-md border-gray-300 pr-12 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
+                <kbd className="inline-flex items-center rounded border border-gray-200 px-2 font-sans text-sm font-medium text-gray-400">
+                  /
+                </kbd>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col">
             <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                 <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
@@ -149,6 +208,7 @@ export default function Home() {
                             </span>
                           </button>
                         </th>
+
                         <th
                           scope="col"
                           className="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
@@ -158,70 +218,52 @@ export default function Home() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                      {chains
-                        .sort((a, b) => {
-                          const aValue: string =
-                            sort.property === "name"
-                              ? a.pretty_name
-                              : a.chain_id;
-                          const bValue =
-                            sort.property === "name"
-                              ? b.pretty_name
-                              : b.chain_id;
-                          if (sort.value === null) {
-                            return 0;
-                          }
-                          if (sort.value === true) {
-                            return aValue.localeCompare(bValue);
-                          }
-                          return bValue.localeCompare(aValue);
-                        })
-                        .map((c) => (
-                          <tr key={c.chain_id}>
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                              <img
-                                className="h-4 w-4 rounded-md"
-                                src={
-                                  c.logo_URIs?.png ??
-                                  c.logo_URIs?.jpeg ??
-                                  c.logo_URIs?.svg
-                                }
+                      {chains.map((c) => (
+                        <tr key={c.chain_id}>
+                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                            <img
+                              className="h-4 w-4 rounded-md"
+                              src={
+                                c.logo_URIs?.png ??
+                                c.logo_URIs?.jpeg ??
+                                c.logo_URIs?.svg
+                              }
+                            />
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {c.pretty_name}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {c.chain_id}
+                          </td>
+                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex items-center space-x-4">
+                            <button
+                              className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                              onClick={() => onKeplr("keplr", c)}
+                            >
+                              <Image
+                                src={`/keplr.png`}
+                                width={20}
+                                height={20}
+                                alt="keplr"
+                                className="rounded-sm"
                               />
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              {c.pretty_name}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              {c.chain_id}
-                            </td>
-                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex items-center space-x-4">
-                              <button
-                                className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                                onClick={() => onKeplr("keplr", c)}
-                              >
-                                <Image
-                                  src={`/keplr.png`}
-                                  width={20}
-                                  height={20}
-                                  alt="keplr"
-                                  className="rounded-sm"
-                                />
-                              </button>
-                              <button
-                                className="text-indigo-600 hover:text-indigo-900 flex items-center space-x-2"
-                                onClick={() => onKeplr("cosmostation", c)}
-                              >
-                                <Image
-                                  src={`/cosmostation.svg`}
-                                  width={20}
-                                  height={20}
-                                  alt="cosmostation"
-                                  className="rounded-sm"
-                                />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                            </button>
+                            <button
+                              className="text-indigo-600 hover:text-indigo-900 flex items-center space-x-2"
+                              onClick={() => onKeplr("cosmostation", c)}
+                            >
+                              <Image
+                                src={`/cosmostation.svg`}
+                                width={20}
+                                height={20}
+                                alt="cosmostation"
+                                className="rounded-sm"
+                              />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
