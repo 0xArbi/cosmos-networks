@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { chainRegistryChainToKeplr } from "@chain-registry/keplr";
 import { Keplr } from "@keplr-wallet/types";
+import { NetworkIcon } from "../components";
 
 // null = no sort
 // true = desc
@@ -218,52 +219,47 @@ export default function Home() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                      {chains.map((c) => (
-                        <tr key={c.chain_id}>
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                            <img
-                              className="h-4 w-4 rounded-md"
-                              src={
-                                c.logo_URIs?.png ??
-                                c.logo_URIs?.jpeg ??
-                                c.logo_URIs?.svg
-                              }
-                            />
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {c.pretty_name}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {c.chain_id}
-                          </td>
-                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex items-center space-x-4">
-                            <button
-                              className="text-indigo-600 hover:text-indigo-900 flex items-center"
-                              onClick={() => onKeplr("keplr", c)}
-                            >
-                              <Image
-                                src={`/keplr.png`}
-                                width={20}
-                                height={20}
-                                alt="keplr"
-                                className="rounded-sm"
-                              />
-                            </button>
-                            <button
-                              className="text-indigo-600 hover:text-indigo-900 flex items-center space-x-2"
-                              onClick={() => onKeplr("cosmostation", c)}
-                            >
-                              <Image
-                                src={`/cosmostation.svg`}
-                                width={20}
-                                height={20}
-                                alt="cosmostation"
-                                className="rounded-sm"
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      {chains.map((c) => {
+                        return (
+                          <tr key={c.chain_id}>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              <NetworkIcon name={c.chain_name} />
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              {c.pretty_name}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              {c.chain_id}
+                            </td>
+                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex items-center space-x-4">
+                              <button
+                                className="text-indigo-600 hover:text-indigo-900 flex items-center"
+                                onClick={() => onKeplr("keplr", c)}
+                              >
+                                <Image
+                                  src={`/keplr.png`}
+                                  width={20}
+                                  height={20}
+                                  alt="keplr"
+                                  className="rounded-sm"
+                                />
+                              </button>
+                              <button
+                                className="text-indigo-600 hover:text-indigo-900 flex items-center space-x-2"
+                                onClick={() => onKeplr("cosmostation", c)}
+                              >
+                                <Image
+                                  src={`/cosmostation.svg`}
+                                  width={20}
+                                  height={20}
+                                  alt="cosmostation"
+                                  className="rounded-sm"
+                                />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
