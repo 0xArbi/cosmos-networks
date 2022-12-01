@@ -24,7 +24,7 @@ export function NetworkIcon({ name }: { name: string }) {
   return (
     <Image
       alt={name}
-      className="rounded-md"
+      className="rounded-full"
       src={image}
       height={SIZE}
       width={SIZE}

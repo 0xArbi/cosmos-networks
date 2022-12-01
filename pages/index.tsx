@@ -222,7 +222,7 @@ export default function Home() {
                       {chains.map((c) => {
                         return (
                           <tr key={c.chain_id}>
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                            <td className="whitespace-nowrap py-4 text-sm font-medium text-gray-900 sm:pl-6">
                               <NetworkIcon name={c.chain_name} />
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
