@@ -1,4 +1,5 @@
-import { chainRegistryChainToKeplr } from "@chain-registry/keplr";
+// import { chainRegistryChainToKeplr } from "@chain-registry/keplr";
+import { chainRegistryChainToKeplr } from "../services/chainRegistryChainToKeplr";
 import { Chain } from "@chain-registry/types";
 import { Switch } from "@headlessui/react";
 import { Keplr } from "@keplr-wallet/types";
@@ -12,6 +13,12 @@ import { NetworkIcon } from "../components";
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
+
+registry.chains.forEach((c) => {
+  if (c.chain_id === "elfagar-1") {
+    c.chain_id = "elgafar-1";
+  }
+});
 
 function Filter({
   checked,
